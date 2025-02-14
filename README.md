@@ -1,1 +1,1 @@
-# Raypoker - Poker game manager in C using Raylib
+# Raygo - Go game in C using Raylib
