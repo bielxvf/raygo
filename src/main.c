@@ -79,7 +79,7 @@ int main(int argc, char** argv)
         }
     }
 
-    Button title = Button_init(font, "Raygo", (Vector2){ .x = SCREEN_WIDTH / 2, .y = 100 }, WHITE, BLACK);
+    Button title = Button_init(font, "Raygo", (Vector2){ .x = SCREEN_WIDTH / 2.0, .y = 100 }, WHITE, BLACK);
     Button btn_main_menu = Button_init(font, "Main menu", (Vector2){ .x = 100, .y = 100 }, RED, BLACK);
     Button btn_play_offline = Button_init(font, "Play offline", (Vector2){ .x = SCREEN_WIDTH/2.0, .y = SCREEN_HEIGHT/2.0 }, RED, BLACK);
 
