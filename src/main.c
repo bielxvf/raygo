@@ -1,3 +1,6 @@
+#include <stddef.h>
+#include <stdio.h>
+
 #include <raylib.h>
 
 #define PROGRAM "raygo"
@@ -16,6 +19,8 @@ typedef struct {
     Color fg_color;
     Color bg_color;
 } Button;
+
+Color WOOD = (Color){ .r = 0x92, .g = 0x66, .b = 0x3E, .a = 0xFF};
 
 Button Button_init(Font font, const char* text, Vector2 pos, Color bg_color, Color fg_color)
 {
@@ -67,6 +72,13 @@ int main(int argc, char** argv)
         TraceLog(LOG_ERROR, "Failed to load font!");
     }
 
+    Color board[9][9] = {0};
+    for (size_t i = 0; i < 9; i++) {
+        for (size_t j = 0; j < 9; j++) {
+                board[i][j] = WOOD;
+        }
+    }
+
     Button title = Button_init(font, "Raygo", (Vector2){ .x = SCREEN_WIDTH / 2, .y = 100 }, WHITE, BLACK);
     Button btn_main_menu = Button_init(font, "Main menu", (Vector2){ .x = 100, .y = 100 }, RED, BLACK);
     Button btn_play_offline = Button_init(font, "Play offline", (Vector2){ .x = SCREEN_WIDTH/2.0, .y = SCREEN_HEIGHT/2.0 }, RED, BLACK);
@@ -93,7 +105,7 @@ int main(int argc, char** argv)
 
 
 	    BeginDrawing();
-	    ClearBackground(WHITE);
+	    ClearBackground(SKYBLUE);
         switch (current_screen) {
         case MAIN_MENU: {
             Button_draw(font, title);
@@ -101,6 +113,34 @@ int main(int argc, char** argv)
         } break;
         case PLAY_OFFLINE: {
             Button_draw(font, btn_main_menu);
+
+            DrawRectangle((SCREEN_WIDTH - 50 * 9) / 2 - 25, (SCREEN_HEIGHT - 50 * 9) / 2 - 25, 50 * 9 + 50, 50 * 9 + 50, WOOD);
+
+            float start_x = (SCREEN_WIDTH - 50.0 * 9.0) / 2.0 + 25.0;
+            float start_y = (SCREEN_HEIGHT - 50.0 * 9.0) / 2.0 + 25.0;
+            for (size_t i = 0; i < 9; i++) {
+                DrawLine(start_x, start_y, start_x + 50.0 * 8.0, start_y, BLACK);
+                start_y += 50.0;
+            }
+
+            float start_x2 = (SCREEN_WIDTH - 50.0 * 9.0) / 2.0 + 25.0;
+            float start_y2 = (SCREEN_HEIGHT - 50.0 * 9.0) / 2.0 + 25.0;
+            for (size_t i = 0; i < 9; i++) {
+                DrawLine(start_x2, start_y2, start_x2, start_y2 + 50.0 * 8.0, BLACK);
+                start_x2 += 50.0;
+            }
+
+            board[3][4] = WHITE;
+            board[0][0] = BLACK;
+            board[8][0] = WHITE;
+
+            for (size_t i = 0; i < 9; i++) {
+                for (size_t j = 0; j < 9; j++) {
+                    if (board[i][j].r != WOOD.r || board[i][j].g != WOOD.g || board[i][j].b != WOOD.b || board[i][j].a != WOOD.a) {
+                        DrawCircle((SCREEN_WIDTH - 50 * 9) / 2 + (i % 9) * 50 + 25, (SCREEN_HEIGHT - 50 * 9) / 2 + (j % 9) * 50 + 25, 25, board[i][j]);
+                    }
+                }
+            }
         } break;
         }
 	    EndDrawing();
