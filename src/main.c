@@ -7,6 +7,7 @@
 
 typedef enum {
     MAIN_MENU = 0,
+    PLAY_OFFLINE,
 } Game_Screen;
 
 typedef struct {
@@ -53,26 +54,53 @@ bool is_mouse_on_rec(Rectangle rec)
     return false;
 }
 
-int main()
+int main(int argc, char** argv)
 {
+    (void) argc;
+    (void) argv;
+
     InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, PROGRAM);
     SetTargetFPS(60);
     Game_Screen current_screen = MAIN_MENU;
     Font font = LoadFont("../resources/dejavu.fnt");
+    if (font.texture.id == 0) {
+        TraceLog(LOG_ERROR, "Failed to load font!");
+    }
 
-    Button btn_hello = Button_init(font, "Hello", (Vector2){ .x = SCREEN_WIDTH/2.0, .y = SCREEN_HEIGHT/2.0 }, RED, BLACK);
+    Button title = Button_init(font, "Raygo", (Vector2){ .x = SCREEN_WIDTH / 2, .y = 100 }, WHITE, BLACK);
+    Button btn_main_menu = Button_init(font, "Main menu", (Vector2){ .x = 100, .y = 100 }, RED, BLACK);
+    Button btn_play_offline = Button_init(font, "Play offline", (Vector2){ .x = SCREEN_WIDTH/2.0, .y = SCREEN_HEIGHT/2.0 }, RED, BLACK);
 
     while (!WindowShouldClose()) {
+        // float dt = GetFrameTime();
+
         switch (current_screen) {
         case MAIN_MENU: {
+            if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
+                if (is_mouse_on_rec(btn_play_offline.rec)) {
+                    current_screen = PLAY_OFFLINE;
+                }
+            }
+        } break;
+        case PLAY_OFFLINE: {            
+            if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
+                if (is_mouse_on_rec(btn_main_menu.rec)) {
+                    current_screen = MAIN_MENU;
+                }
+            }
         } break;
         }
+
 
 	    BeginDrawing();
 	    ClearBackground(WHITE);
         switch (current_screen) {
         case MAIN_MENU: {
-            Button_draw(font, btn_hello);
+            Button_draw(font, title);
+            Button_draw(font, btn_play_offline);
+        } break;
+        case PLAY_OFFLINE: {
+            Button_draw(font, btn_main_menu);
         } break;
         }
 	    EndDrawing();
