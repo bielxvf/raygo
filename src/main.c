@@ -13,6 +13,12 @@ typedef enum {
     PLAY_OFFLINE,
 } Game_Screen;
 
+typedef enum {
+    STONE_EMPTY = 0,
+    STONE_BLACK,
+    STONE_WHITE,
+} Stone;
+
 typedef struct {
     const char* text;
     Rectangle rec;
@@ -72,10 +78,14 @@ int main(int argc, char** argv)
         TraceLog(LOG_ERROR, "Failed to load font!");
     }
 
-    Color board[9][9] = {0};
+    Texture2D texture_board = LoadTexture("../resources/Blank_Go_board_9x9.png");
+    Texture2D texture_stone_black = LoadTexture("../resources/stone_black.png");
+    Texture2D texture_stone_white = LoadTexture("../resources/stone_white.png");
+
+    Stone board[9][9] = {0};
     for (size_t i = 0; i < 9; i++) {
         for (size_t j = 0; j < 9; j++) {
-                board[i][j] = WOOD;
+                board[i][j] = STONE_EMPTY;
         }
     }
 
@@ -83,9 +93,13 @@ int main(int argc, char** argv)
     Button btn_main_menu = Button_init(font, "Main menu", (Vector2){ .x = 100, .y = 100 }, RED, BLACK);
     Button btn_play_offline = Button_init(font, "Play offline", (Vector2){ .x = SCREEN_WIDTH/2.0, .y = SCREEN_HEIGHT/2.0 }, RED, BLACK);
 
+    int key = 0;
+    int second_key = 0;
+    int move = 0;
     while (!WindowShouldClose()) {
         // float dt = GetFrameTime();
 
+        // INPUT
         switch (current_screen) {
         case MAIN_MENU: {
             if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
@@ -98,12 +112,40 @@ int main(int argc, char** argv)
             if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
                 if (is_mouse_on_rec(btn_main_menu.rec)) {
                     current_screen = MAIN_MENU;
+                } else if (false) { // @TODO: Check for clicks on the board
                 }
+            }
+
+            if (key == 0) {
+                key = GetKeyPressed();
+            }
+            if (key >= '1' && key <= '9') {
+                if (second_key == 0) {
+                    second_key = GetKeyPressed();
+                    if (second_key >= '1' && second_key <= '9') {
+                        board[key - '1'][(9 - (second_key - '0')) % 9] = move % 2 == 0 ? STONE_BLACK : STONE_WHITE;
+                        key = 0;
+                        second_key = 0;
+                        move++;
+                    }
+                }
+
             }
         } break;
         }
 
 
+        // SIMULATION
+        // @TODO: Check dead stones and remove
+        for (size_t i = 0; i < 9; i++) {
+            for (size_t j = 0; j < 9; j++) {
+                if (board[i + 1][j] != STONE_EMPTY && board[i+1][j] == STONE_BLACK) {
+                    board[i][j] = STONE_EMPTY;
+                }
+            }
+        }
+
+        // RENDERING
 	    BeginDrawing();
 	    ClearBackground(SKYBLUE);
         switch (current_screen) {
@@ -114,33 +156,37 @@ int main(int argc, char** argv)
         case PLAY_OFFLINE: {
             Button_draw(font, btn_main_menu);
 
-            DrawRectangle((SCREEN_WIDTH - 50 * 9) / 2 - 25, (SCREEN_HEIGHT - 50 * 9) / 2 - 25, 50 * 9 + 50, 50 * 9 + 50, WOOD);
+            float i_want_width = 50.0 * 10.0;
+            float board_x = (SCREEN_WIDTH - i_want_width) / 2.0;
+            float board_y = (SCREEN_HEIGHT - i_want_width) / 2.0;
+            DrawTextureEx(texture_board,
+                    (Vector2){ .x = board_x, .y = board_y },
+                    0.0,
+                    i_want_width / (float) texture_board.width,
+                    WHITE);
 
-            float start_x = (SCREEN_WIDTH - 50.0 * 9.0) / 2.0 + 25.0;
-            float start_y = (SCREEN_HEIGHT - 50.0 * 9.0) / 2.0 + 25.0;
-            for (size_t i = 0; i < 9; i++) {
-                DrawLine(start_x, start_y, start_x + 50.0 * 8.0, start_y, BLACK);
-                start_y += 50.0;
-            }
-
-            float start_x2 = (SCREEN_WIDTH - 50.0 * 9.0) / 2.0 + 25.0;
-            float start_y2 = (SCREEN_HEIGHT - 50.0 * 9.0) / 2.0 + 25.0;
-            for (size_t i = 0; i < 9; i++) {
-                DrawLine(start_x2, start_y2, start_x2, start_y2 + 50.0 * 8.0, BLACK);
-                start_x2 += 50.0;
-            }
-
-            board[3][4] = WHITE;
-            board[0][0] = BLACK;
-            board[8][0] = WHITE;
-
+            float i_want_stone_width = 50.0;
             for (size_t i = 0; i < 9; i++) {
                 for (size_t j = 0; j < 9; j++) {
-                    if (board[i][j].r != WOOD.r || board[i][j].g != WOOD.g || board[i][j].b != WOOD.b || board[i][j].a != WOOD.a) {
-                        DrawCircle((SCREEN_WIDTH - 50 * 9) / 2 + (i % 9) * 50 + 25, (SCREEN_HEIGHT - 50 * 9) / 2 + (j % 9) * 50 + 25, 25, board[i][j]);
+                    switch (board[i][j]) {
+                    case STONE_BLACK: {
+                        DrawTextureEx(texture_stone_black,
+                                (Vector2){ .x = 7.5 + board_x + (i % 9) * (i_want_stone_width + 4.25), .y = 7.5 + board_y + (j % 9) * (i_want_stone_width + 4.25) },
+                                0.0,
+                                i_want_stone_width / texture_stone_black.width,
+                                WHITE);
+                    } break;
+                    case STONE_WHITE: {
+                        DrawTextureEx(texture_stone_white,
+                                (Vector2){ .x = 7.5 + board_x + (i % 9) * (i_want_stone_width + 4.25), .y = 7.5 + board_y + (j % 9) * (i_want_stone_width + 4.25) },
+                                0.0,
+                                i_want_stone_width / texture_stone_white.width,
+                                WHITE);
+                    } break;
                     }
                 }
             }
+
         } break;
         }
 	    EndDrawing();
