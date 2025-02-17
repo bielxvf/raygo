@@ -123,10 +123,12 @@ int main(int argc, char** argv)
                 if (second_key == 0) {
                     second_key = GetKeyPressed();
                     if (second_key >= '1' && second_key <= '9') {
-                        board[key - '1'][(9 - (second_key - '0')) % 9] = move % 2 == 0 ? STONE_BLACK : STONE_WHITE;
+                        if (board[key -'1'][(9 - (second_key - '0')) % 9] == STONE_EMPTY) {
+                            board[key - '1'][(9 - (second_key - '0')) % 9] = move % 2 == 0 ? STONE_BLACK : STONE_WHITE;
+                            move++;
+                        }
                         key = 0;
                         second_key = 0;
-                        move++;
                     }
                 }
 
@@ -137,13 +139,21 @@ int main(int argc, char** argv)
 
         // SIMULATION
         // @TODO: Check dead stones and remove
-        for (size_t i = 0; i < 9; i++) {
-            for (size_t j = 0; j < 9; j++) {
-                if (board[i + 1][j] != STONE_EMPTY && board[i+1][j] == STONE_BLACK) {
-                    board[i][j] = STONE_EMPTY;
-                }
-            }
-        }
+        // for (size_t i = 0; i < 9; i++) {
+        //     for (size_t j = 0; j < 9; j++) {
+        //         if (board[i][j] != STONE_EMPTY) {
+        //             if (board[i + 1][j] != board[i][j]) {
+        //                 if (board[i - 1][j] != board[i][j]) {
+        //                     if (board[i][j + 1] != board[i][j]) {
+        //                         if (board[i][j - 1] != board[i][j]) {
+        //                             board[i][j] = STONE_EMPTY;
+        //                         }
+        //                     }
+        //                 }
+        //             }
+        //         }
+        //     }
+        // }
 
         // RENDERING
 	    BeginDrawing();
@@ -182,6 +192,8 @@ int main(int argc, char** argv)
                                 0.0,
                                 i_want_stone_width / texture_stone_white.width,
                                 WHITE);
+                    } break;
+                    case STONE_EMPTY: {
                     } break;
                     }
                 }
